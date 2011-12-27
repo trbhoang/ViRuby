@@ -10,6 +10,8 @@ YACC = yacc
 PURIFY =
 AUTOCONF = autoconf
 
+DESTDIR = ..
+
 prefix = /usr/local
 CFLAGS = -g -O2
 CPPFLAGS = -I. -I$(srcdir)
