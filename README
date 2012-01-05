@@ -5,3 +5,6 @@ Contact: trbhoang@gmail.com
 * This is for my learning purpose on implementation of Ruby.
 * Thanks for the code at http://i.loveruby.net/ja/rhg/ar/ruby-rhg.tar.gz
 
+* Install necessary tools (on Ubuntu)
+  $ apt-get install bison gperf
+  
