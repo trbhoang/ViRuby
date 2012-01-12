@@ -18,6 +18,9 @@
 extern "C" {
 #endif
 
+#include "config.h"
+#include "defines.h"
+
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
@@ -65,7 +68,6 @@ extern "C" {
 #if SIZEOF_LONG != SIZEOF_VOIDP
 # error ---->> ruby requires sizeof(void*) == sizeof(long) to be compiled. <<----
 #endif
-
 typedef unsigned long VALUE;
 typedef unsigned long ID;
 
@@ -286,73 +288,73 @@ VALUE rb_newobj _((void));
 } while (0)
 
 struct RBasic {
-  unsigned long flags;
-  VALUE klass;
+    unsigned long flags;
+    VALUE klass;
 };
 
 struct RObject {
-  struct RBasic basic;
-  struct st_table *iv_tbl;
+    struct RBasic basic;
+    struct st_table *iv_tbl;
 };
 
 struct RClass {
-  struct RBasic basic;
-  struct st_table *iv_tbl;
-  struct st_table *m_tbl;
-  VALUE  super;
+    struct RBasic basic;
+    struct st_table *iv_tbl;
+    struct st_table *m_tbl;
+    VALUE super;
 };
 
 struct RFloat {
-  struct RBasic basic;
-  double value;
+    struct RBasic basic;
+    double value;
 };
 
 #define ELTS_SHARED FL_USER2
 
 struct RString {
-  struct RBasic basic;
-  long len;
-  char *ptr;
-  union {
-    long capa;
-    VALUE shared;
-  } aux;
+    struct RBasic basic;
+    long len;
+    char *ptr;
+    union {
+	long capa;
+	VALUE shared;
+    } aux;
 };
 
 struct RArray {
-  struct RBasic basic;
-  long len;
-  union {
-    long capa;
-    VALUE shared;
-  } aux;
-  VALUE *ptr;
+    struct RBasic basic;
+    long len;
+    union {
+	long capa;
+	VALUE shared;
+    } aux;
+    VALUE *ptr;
 };
 
 struct RRegexp {
-  struct RBasic basic;
-  struct re_pattern_buffer *ptr;
-  long len;
-  char *str;
+    struct RBasic basic;
+    struct re_pattern_buffer *ptr;
+    long len;
+    char *str;
 };
 
 struct RHash {
-  struct RBasic basic;
-  struct st_table *tbl;
-  int iter_lev;
-  VALUE ifnone;
+    struct RBasic basic;
+    struct st_table *tbl;
+    int iter_lev;
+    VALUE ifnone;
 };
 
 struct RFile {
-  struct RBasic basic;
-  struct OpenFile *fptr;
+    struct RBasic basic;
+    struct OpenFile *fptr;
 };
 
 struct RData {
-  struct RBasic basic;
-  void (*dmark) _((void*));
-  void (*dfree) _((void*));
-  void *data;
+    struct RBasic basic;
+    void (*dmark) _((void*));
+    void (*dfree) _((void*));
+    void *data;
 };
 
 #define DATA_PTR(dta) (RDATA(dta)->data)
@@ -385,10 +387,10 @@ struct RStruct {
 };
 
 struct RBignum {
-  struct RBasic basic;
-  char sign;
-  long len;
-  void *digits;
+    struct RBasic basic;
+    char sign;
+    long len;
+    void *digits;
 };
 
 #define R_CAST(st)   (struct st*)
@@ -482,6 +484,7 @@ void rb_define_attr _((VALUE,const char*,int,int));
 void rb_global_variable _((VALUE*));
 void rb_gc_register_address _((VALUE*));
 void rb_gc_unregister_address _((VALUE*));
+
 ID rb_intern _((const char*));
 char *rb_id2name _((ID));
 ID rb_to_id _((VALUE));
@@ -657,5 +660,5 @@ static char *dln_libs_to_be_linked[] = { EXTLIB, 0 };
 #if defined(__cplusplus)
 }  /* extern "C" { */
 #endif
-  
+
 #endif /* ifndef RUBY_H */
