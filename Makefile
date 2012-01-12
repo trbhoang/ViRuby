@@ -116,6 +116,8 @@ clean-local:
 		@rm -f $(PROGRAM) miniruby$(EXEEXT)
 
 clean: clean-ext clean-local
+	@rm -f parse.c
+	@rm -f lex.c
 
 distclean-ext:
 		@-./miniruby$(EXEEXT) $(srcdir)/ext/extmk.rb distclean 2> /dev/null || true
