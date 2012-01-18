@@ -191,6 +191,111 @@ static void call_trace_func _((char*,NODE*,VALUE,ID,VALUE));
 #define SET_CURRENT_SOURCE() (ruby_sourcefile = ruby_current_node->nd_file, \
 			      ruby_sourceline = nd_line(ruby_current_node))
 
+static void error_print()
+{
+    VALUE errat = Qnil;		/* OK */
+    volatile VALUE eclass;
+    char *einfo;
+    long elen;
+
+    if (NIL_P(ruby_errinfo)) return;
+
+    PUSH_TAG(PROT_NONE);
+    if (EXEC_TAG() == 0) {
+	errat = get_backtrace(ruby_errinfo);
+    }
+    else {
+	errat = Qnil;
+    }
+    POP_TAG();
+    if (NIL_P(errat)){
+	ruby_set_current_source();
+	if (ruby_sourcefile)
+	    fprintf(stderr, "%s:%d", ruby_sourcefile, ruby_sourceline);
+	else
+	    fprintf(stderr, "%d", ruby_sourceline);
+    }
+    else if (RARRAY(errat)->len == 0) {
+	error_pos();
+    }
+    else {
+	VALUE mesg = RARRAY(errat)->ptr[0];
+
+	if (NIL_P(mesg)) error_pos();
+	else {
+	    fwrite(RSTRING(mesg)->ptr, 1, RSTRING(mesg)->len, stderr);
+	}
+    }
+
+    eclass = CLASS_OF(ruby_errinfo);
+    PUSH_TAG(PROT_NONE);
+    if (EXEC_TAG() == 0) {
+	VALUE e = rb_obj_as_string(ruby_errinfo);
+	einfo = RSTRING(e)->ptr;
+	elen = RSTRING(e)->len;
+    }
+    else {
+	einfo = "";
+	elen = 0;
+    }
+    POP_TAG();
+    if (eclass == rb_eRuntimeError && elen == 0) {
+	fprintf(stderr, ": unhandled exception\n");
+    }
+    else {
+	VALUE epath;
+
+	epath = rb_class_path(eclass);
+	if (elen == 0) {
+	    fprintf(stderr, ": ");
+	    fwrite(RSTRING(epath)->ptr, 1, RSTRING(epath)->len, stderr);
+	    putc('\n', stderr);
+	}
+	else {
+	    char *tail  = 0;
+	    long len = elen;
+
+	    if (RSTRING(epath)->ptr[0] == '#') epath = 0;
+	    if (tail = strchr(einfo, '\n')) {
+		len = tail - einfo;
+		tail++;		/* skip newline */
+	    }
+	    fprintf(stderr, ": ");
+	    fwrite(einfo, 1, len, stderr);
+	    if (epath) {
+		fprintf(stderr, " (");
+		fwrite(RSTRING(epath)->ptr, 1, RSTRING(epath)->len, stderr);
+		fprintf(stderr, ")\n");
+	    }
+	    if (tail) {
+		fwrite(tail, 1, elen-len-1, stderr);
+		putc('\n', stderr);
+	    }
+	}
+    }
+
+    if (!NIL_P(errat)) {
+	long i;
+	struct RArray *ep = RARRAY(errat);
+
+#define TRACE_MAX (TRACE_HEAD+TRACE_TAIL+5)
+#define TRACE_HEAD 8
+#define TRACE_TAIL 5
+
+	ep = RARRAY(errat);
+	for (i=1; i<ep->len; i++) {
+	    if (TYPE(ep->ptr[i]) == T_STRING) {
+		fprintf(stderr, "\tfrom %s\n", RSTRING(ep->ptr[i])->ptr);
+	    }
+	    if (i == TRACE_HEAD && ep->len > TRACE_MAX) {
+		fprintf(stderr, "\t ... %ld levels...\n",
+			ep->len - TRACE_HEAD - TRACE_TAIL);
+		i = ep->len - TRACE_TAIL;
+	    }
+	}
+    }
+}
+
 
 #if !defined(NT) && !defined(__MACOS__)
 extern char **environ;
@@ -371,3 +476,4 @@ scope_dup(scope)
 	scope->flags |= SCOPE_MALLOC;
     }
 }
+

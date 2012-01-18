@@ -54,7 +54,7 @@ VALUE rb_gc_start()
 {
     rb_gc();
     return Qnil;
-}    
+}
 
 typedef struct RVALUE {
     union {
@@ -76,7 +76,7 @@ typedef struct RVALUE {
 	struct RFile   file;
 	struct RNode   node;
 	struct RMatch  match;
-	struct RVarmap varmap; 
+	struct RVarmap varmap;
 	struct SCOPE   scope;
     } as;
 } RVALUE;
@@ -100,7 +100,7 @@ static RVALUE *himem, *lomem;
 static void add_heap()
 {
     RVALUE *p, *pend;
-    
+
     if (heaps_used == heaps_length) {
 	/* Realloc heaps */
 	heaps_length += HEAPS_INCREMENT;
@@ -210,4 +210,12 @@ ruby_xmalloc(size)
     }
 
     return mem;
+}
+
+void rb_gc_force_recycle(p)
+     VALUE p;
+{
+    RANY(p)->as.free.flags = 0;
+    RANY(p)->as.free.next = freelist;
+    freelist = RANY(p);
 }
